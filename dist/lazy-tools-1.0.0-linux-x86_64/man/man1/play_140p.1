@@ -1,0 +1,45 @@
+.TH PLAY_140P 1 "August 2026" "v1.0" "User Commands"
+.SH NAME
+play_140p \- Minimalist YouTube Player with Digital Wellbeing & Speech Recognition
+.SH SYNOPSIS
+.B play_140p
+[\fIURL_OR_QUERY\fR] [\fISPEED\fR] [\fIMODE\fR]
+.br
+.B play_140p status
+.br
+.B play_140p convert
+\fIFILE_OR_URL\fR...
+.br
+.B play_140p transcribe
+\fIFILE_OR_URL\fR
+.SH DESCRIPTION
+.B play_140p
+is a terminal YouTube player and audio utility designed for low bandwidth and digital wellbeing.
+It includes auto-cutoff locks (60 min daily limit), clipboard detection, terminal ASCII thumbnail previews, automatic missing dependency detection and auto-installation (via system package manager dnf, apt, pacman, zypper, or pip for tools such as mpv, yt-dlp, ffmpeg, fzf, chafa, or SpeechRecognition), unlimited batch parallel audio conversion, and speech-to-text transcription.
+
+.SH SUBCOMMANDS
+.TP
+.B status
+Display current daily watch usage and cooldown lock status.
+.TP
+.B convert \fIFILE_OR_URL\fR...
+Delegate unlimited parallel audio conversion to \fBaudioconvert\fR.
+.TP
+.B transcribe \fIFILE_OR_URL\fR
+Transcribe audio track from local file or web URL to text.
+
+.SH EXAMPLES
+.TP
+.B play_140p "lofi beats"
+Search YouTube interactively with terminal thumbnail UI.
+.TP
+.B play_140p "https://youtu.be/..." 1.5x audio
+Play YouTube video in audio-only mode at 1.5x speed.
+.TP
+.B play_140p status
+Show usage statistics and lockdown status.
+
+.SH SEE ALSO
+.BR audioconvert (1),
+.BR mpv (1),
+.BR fzf (1)

@@ -1,0 +1,63 @@
+name: Build & Release Packages
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-linux-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Nim Environment
+        uses: jreimone/setup-nim-action@v2
+        with:
+          nim-version: 'stable'
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg rpm ruby ruby-dev rubygems build-essential
+          sudo gem install --no-document fpm
+
+      - name: Compile Nim Binaries
+        run: |
+          nim c -d:release play_140p.nim
+          nim c -d:release audioconvert.nim
+          nim c -d:release projects/lazy_vault/lazy_vault.nim
+
+      - name: Build DEB Package
+        run: |
+          mkdir -p build_deb/usr/local/bin build_deb/usr/local/share/man/man1
+          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_deb/usr/local/bin/
+          cp *.1 build_deb/usr/local/share/man/man1/ || true
+          fpm -s dir -t deb -n lazy-tools -v 1.0.0 -C build_deb .
+
+      - name: Build RPM Package
+        run: |
+          mkdir -p build_rpm/usr/local/bin build_rpm/usr/local/share/man/man1
+          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_rpm/usr/local/bin/
+          cp *.1 build_rpm/usr/local/share/man/man1/ || true
+          fpm -s dir -t rpm -n lazy-tools -v 1.0.0 -C build_rpm .
+
+      - name: Create Tarball Archive
+        run: |
+          mkdir -p lazy-tools-1.0.0-linux-x86_64
+          cp play_140p audioconvert projects/lazy_vault/lazy_vault install.sh README.md LICENSE lazy-tools-1.0.0-linux-x86_64/
+          tar -czvf lazy-tools-1.0.0-linux-x86_64.tar.gz lazy-tools-1.0.0-linux-x86_64
+
+      - name: Create GitHub Release & Upload Packages
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            *.deb
+            *.rpm
+            *.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
