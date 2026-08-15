@@ -33,42 +33,36 @@ jobs:
           nim c -d:release audioconvert.nim
           nim c -d:release projects/lazy_vault/lazy_vault.nim
 
-      - name: Build Full Suite Packages (DEB, RPM, Tarball)
+      - name: Build Standalone & Full Suite FPM Packages (DEB & RPM)
         run: |
-          mkdir -p build_deb/usr/local/bin build_deb/usr/local/share/man/man1
-          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_deb/usr/local/bin/
-          cp *.1 build_deb/usr/local/share/man/man1/ || true
-          fpm -s dir -t deb -n lazy-tools -v 1.0.0 -C build_deb .
+          # 1. Full Suite DEB & RPM
+          mkdir -p build_suite/usr/local/bin build_suite/usr/local/share/man/man1
+          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_suite/usr/local/bin/
+          cp *.1 build_suite/usr/local/share/man/man1/ || true
+          fpm -s dir -t deb -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, lazy_vault)" -C build_suite .
+          fpm -s dir -t rpm -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, lazy_vault)" -C build_suite .
 
-          mkdir -p build_rpm/usr/local/bin build_rpm/usr/local/share/man/man1
-          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_rpm/usr/local/bin/
-          cp *.1 build_rpm/usr/local/share/man/man1/ || true
-          fpm -s dir -t rpm -n lazy-tools -v 1.0.0 -C build_rpm .
+          # 2. Standalone play_140p DEB & RPM
+          mkdir -p build_play140p/usr/local/bin
+          cp play_140p build_play140p/usr/local/bin/
+          fpm -s dir -t deb -n play-140p -v 1.0.0 --description "YouTube player TUI tuned for digital wellbeing" -C build_play140p .
+          fpm -s dir -t rpm -n play_140p -v 1.0.0 --description "YouTube player TUI tuned for digital wellbeing" -C build_play140p .
 
-          mkdir -p lazy-tools-1.0.0-linux-x86_64
-          cp play_140p audioconvert projects/lazy_vault/lazy_vault install.sh README.md LICENSE lazy-tools-1.0.0-linux-x86_64/
-          tar -czvf lazy-tools-1.0.0-linux-x86_64.tar.gz lazy-tools-1.0.0-linux-x86_64
+          # 3. Standalone audioconvert DEB & RPM
+          mkdir -p build_audioconvert/usr/local/bin
+          cp audioconvert build_audioconvert/usr/local/bin/
+          fpm -s dir -t deb -n audioconvert -v 1.0.0 --description "Parallel multi-core audio converter and speech transcriber" -C build_audioconvert .
+          fpm -s dir -t rpm -n audioconvert -v 1.0.0 --description "Parallel multi-core audio converter and speech transcriber" -C build_audioconvert .
 
-      - name: Build Individual Standalone Packages
+          # 4. Standalone lazy_vault DEB & RPM
+          mkdir -p build_lazyvault/usr/local/bin
+          cp projects/lazy_vault/lazy_vault build_lazyvault/usr/local/bin/
+          fpm -s dir -t deb -n lazy-vault -v 1.0.0 --description "Encrypted password & file vault" -C build_lazyvault .
+          fpm -s dir -t rpm -n lazy_vault -v 1.0.0 --description "Encrypted password & file vault" -C build_lazyvault .
+
+      - name: Verify FPM Packages
         run: |
-          # play_140p
-          mkdir -p play_140p-1.0.0
-          cp play_140p README.md LICENSE PLAY_140P_DOCUMENTATION.md play_140p-1.0.0/
-          tar -czvf play_140p-1.0.0-linux-x86_64.tar.gz play_140p-1.0.0
-
-          # audioconvert
-          mkdir -p audioconvert-1.0.0
-          cp audioconvert README.md LICENSE AUDIOCONVERT_DOCUMENTATION.md audioconvert-1.0.0/
-          tar -czvf audioconvert-1.0.0-linux-x86_64.tar.gz audioconvert-1.0.0
-
-          # lazy_vault
-          mkdir -p lazy_vault-1.0.0
-          cp projects/lazy_vault/lazy_vault README.md LICENSE lazy_vault-1.0.0/
-          tar -czvf lazy_vault-1.0.0-linux-x86_64.tar.gz lazy_vault-1.0.0
-
-      - name: Verify Created Packages
-        run: |
-          ls -la *.tar.gz *.deb *.rpm
+          ls -la *.deb *.rpm
 
       - name: Create GitHub Release & Upload Packages
         uses: softprops/action-gh-release@v2
@@ -77,9 +71,5 @@ jobs:
           files: |
             *.deb
             *.rpm
-            lazy-tools-1.0.0-linux-x86_64.tar.gz
-            play_140p-1.0.0-linux-x86_64.tar.gz
-            audioconvert-1.0.0-linux-x86_64.tar.gz
-            lazy_vault-1.0.0-linux-x86_64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
