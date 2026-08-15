@@ -49,22 +49,20 @@ jobs:
 
       - name: Build Individual Standalone Packages
         run: |
-          mkdir -p dist_individual
-
           # play_140p
           mkdir -p play_140p-1.0.0
           cp play_140p README.md LICENSE PLAY_140P_DOCUMENTATION.md play_140p-1.0.0/
-          tar -czvf dist_individual/play_140p-1.0.0-linux-x86_64.tar.gz play_140p-1.0.0
+          tar -czvf play_140p-1.0.0-linux-x86_64.tar.gz play_140p-1.0.0
 
           # audioconvert
           mkdir -p audioconvert-1.0.0
           cp audioconvert README.md LICENSE AUDIOCONVERT_DOCUMENTATION.md audioconvert-1.0.0/
-          tar -czvf dist_individual/audioconvert-1.0.0-linux-x86_64.tar.gz audioconvert-1.0.0
+          tar -czvf audioconvert-1.0.0-linux-x86_64.tar.gz audioconvert-1.0.0
 
           # lazy_vault
           mkdir -p lazy_vault-1.0.0
           cp projects/lazy_vault/lazy_vault README.md LICENSE lazy_vault-1.0.0/
-          tar -czvf dist_individual/lazy_vault-1.0.0-linux-x86_64.tar.gz lazy_vault-1.0.0
+          tar -czvf lazy_vault-1.0.0-linux-x86_64.tar.gz lazy_vault-1.0.0
 
       - name: Create GitHub Release & Upload Packages
         uses: softprops/action-gh-release@v1
@@ -74,6 +72,8 @@ jobs:
             *.deb
             *.rpm
             lazy-tools-1.0.0-linux-x86_64.tar.gz
-            dist_individual/*.tar.gz
+            play_140p-1.0.0-linux-x86_64.tar.gz
+            audioconvert-1.0.0-linux-x86_64.tar.gz
+            lazy_vault-1.0.0-linux-x86_64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
