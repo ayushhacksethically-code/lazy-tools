@@ -1,0 +1,14 @@
+# Maintainer: ayushhacksethically <dev@lazy-tools.org>
+pkgname=lazy_vault
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Ultra-Frictionless Password Manager & Emergency Recovery Vault in Nim"
+arch=('x86_64')
+url="https://github.com/ayushhacksethically-code/lazy-tools"
+license=('MIT')
+depends=('openssl' 'fzf')
+
+package() {
+    install -Dm755 "${srcdir}/lazy_vault" "${pkgdir}/usr/bin/lazy_vault"
+    ln -sf "${pkgdir}/usr/bin/lazy_vault" "${pkgdir}/usr/bin/v"
+}

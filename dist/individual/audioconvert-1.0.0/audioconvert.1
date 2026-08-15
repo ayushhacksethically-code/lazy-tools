@@ -1,0 +1,67 @@
+.TH AUDIOCONVERT 1 "August 2026" "v1.0" "User Commands"
+.SH NAME
+audioconvert \- Fast CLI Audio Converter, YouTube Downloader & Speech Transcriber
+.SH SYNOPSIS
+.B audioconvert
+[\fIOPTIONS\fR] \fIFILE_OR_URL_OR_DIR\fR...
+.br
+.B audioconvert transcribe
+\fIFILE_OR_URL\fR
+.SH DESCRIPTION
+.B audioconvert
+is a high-performance command-line utility for audio extraction, format conversion, online media downloading, and speech-to-text transcription.
+It wraps \fBffmpeg\fR, \fByt-dlp\fR, and Speech Recognition engines with multi-core parallel worker support and automatic missing dependency installation (detecting package managers dnf, apt, pacman, zypper, or pip).
+It supports processing unlimited/infinite files at once in a single invocation or recursively scanning entire folder trees.
+
+.SH COMMANDS & OPTIONS
+.TP
+.BR transcribe " \fIFILE_OR_URL\fR"
+Transcribe any local audio/video file or online streaming URL into text automatically.
+.TP
+.BR \-t ", " \-\-transcribe
+Option flag equivalent for speech transcription.
+.TP
+.BR \-f ", " \-\-format =\fIFMT\fR
+Target audio format: \fBmp3\fR, \fBopus\fR, \fBm4a\fR, \fBwav\fR, \fBflac\fR, \fBaac\fR (Default: \fBmp3\fR).
+.TP
+.BR \-b ", " \-\-bitrate =\fIRATE\fR
+Target audio bitrate, e.g., \fB128k\fR, \fB192k\fR, \fB320k\fR (Default: \fB192k\fR).
+.TP
+.BR \-o ", " \-\-output =\fIPATH\fR
+Output filename or target destination directory.
+.TP
+.BR \-s ", " \-\-speed =\fIFACTOR\fR
+Playback tempo multiplier (e.g., \fB1.5\fR for 1.5x speed audio).
+.TP
+.BR \-j ", " \-\-jobs =\fINUM\fR
+Number of concurrent parallel worker tasks (Default: maximum system CPU cores, or pass \fB0\fR for max CPU cores).
+.TP
+.BR \-r ", " \-\-recursive
+Recursively scan directory for unlimited video and audio media files.
+.TP
+.BR \-h ", " \-\-help
+Display help message and exit.
+
+.SH EXAMPLES
+.TP
+.B audioconvert song.mp4
+Convert song.mp4 to song.mp3 (192k bitrate).
+.TP
+.B audioconvert f1.mp4 f2.mp4 f3.mp4 f4.mp4 f5.mp4
+Convert 5 files simultaneously using 5 parallel workers.
+.TP
+.B audioconvert transcribe voice.mp3
+Transcribe voice recording audio to text.
+.TP
+.B audioconvert -f m4a -b 320k video.mkv
+Extract high quality 320k m4a audio from video file.
+.TP
+.B audioconvert "https://youtu.be/..."
+Download audio track from YouTube video directly to MP3.
+
+.SH SEE ALSO
+.BR play_140p (1),
+.BR ffmpeg (1),
+.BR yt\-dlp (1)
+.SH AUTHOR
+Created for play_140p ecosystem.

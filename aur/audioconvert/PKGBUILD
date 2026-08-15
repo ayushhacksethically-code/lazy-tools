@@ -1,0 +1,17 @@
+# Maintainer: ayushhacksethically <dev@lazy-tools.org>
+pkgname=audioconvert
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Multi-core Parallel Audio Converter, YouTube Downloader & Speech Transcriber in Nim"
+arch=('x86_64')
+url="https://github.com/ayushhacksethically-code/lazy-tools"
+license=('MIT')
+depends=('ffmpeg' 'yt-dlp')
+optdepends=('python-speechrecognition: for speech-to-text transcription')
+
+package() {
+    install -Dm755 "${srcdir}/audioconvert" "${pkgdir}/usr/bin/audioconvert"
+    if [ -f "${srcdir}/audioconvert.1" ]; then
+        install -Dm644 "${srcdir}/audioconvert.1" "${pkgdir}/usr/share/man/man1/audioconvert.1"
+    fi
+}

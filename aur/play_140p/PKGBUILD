@@ -1,0 +1,18 @@
+# Maintainer: ayushhacksethically <dev@lazy-tools.org>
+pkgname=play_140p
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Lightweight YouTube Player with Digital Wellbeing & Speech Recognition in Nim"
+arch=('x86_64')
+url="https://github.com/ayushhacksethically-code/lazy-tools"
+license=('MIT')
+depends=('mpv' 'yt-dlp' 'fzf')
+optdepends=('chafa: for ANSI terminal thumbnail previews'
+            'python-speechrecognition: for speech-to-text transcription')
+
+package() {
+    install -Dm755 "${srcdir}/play_140p" "${pkgdir}/usr/bin/play_140p"
+    if [ -f "${srcdir}/play_140p.1" ]; then
+        install -Dm644 "${srcdir}/play_140p.1" "${pkgdir}/usr/share/man/man1/play_140p.1"
+    fi
+}
