@@ -1,0 +1,11 @@
+# Artifacts and local text logs
+informationplay_140pandaudioconvert.txt
+*.log
+*.wav
+*.tmp
+*.sock
+play140p_usage.json
+
+# Binaries
+/play_140p
+/audioconvert
