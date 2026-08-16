@@ -33,8 +33,13 @@ jobs:
           nim c -d:release audioconvert.nim
           nim c -d:release projects/lazy_vault/lazy_vault.nim
 
-      - name: Build Standalone & Full Suite FPM Packages (DEB & RPM)
+      - name: Build Standalone Tarballs & FPM Packages (DEB & RPM)
         run: |
+          chmod +x build_packages.sh
+          ./build_packages.sh
+          cp dist/*.tar.gz .
+          cp dist/individual/*.tar.gz .
+
           # 1. Full Suite DEB & RPM
           mkdir -p build_suite/usr/local/bin build_suite/usr/local/share/man/man1
           cp play_140p audioconvert projects/lazy_vault/lazy_vault build_suite/usr/local/bin/
@@ -58,11 +63,11 @@ jobs:
           mkdir -p build_lazyvault/usr/local/bin
           cp projects/lazy_vault/lazy_vault build_lazyvault/usr/local/bin/
           fpm -s dir -t deb -n lazy-vault -v 1.0.0 --description "Encrypted password & file vault" -C build_lazyvault .
-          fpm -s dir -t rpm -n lazy_vault -v 1.0.0 --description "Encrypted password & file vault" -C build_lazyvault .
+          fpm -s dir -t rpm -n lazy-vault -v 1.0.0 --description "Encrypted password & file vault" -C build_lazyvault .
 
-      - name: Verify FPM Packages
+      - name: Verify All Release Assets
         run: |
-          ls -la *.deb *.rpm
+          ls -la *.deb *.rpm *.tar.gz
 
       - name: Create GitHub Release & Upload Packages
         uses: softprops/action-gh-release@v2
@@ -71,5 +76,6 @@ jobs:
           files: |
             *.deb
             *.rpm
+            *.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
