@@ -21,6 +21,7 @@ jobs:
           # Install Nim using choosenim (self-contained installer) to avoid relying on an external action
           curl -sSf https://nim-lang.org/choosenim/init.sh | sh -s -- -y
           echo "$HOME/.nimble/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.nimble/bin:$PATH"
           nim --version
 
       - name: Install Build Dependencies
