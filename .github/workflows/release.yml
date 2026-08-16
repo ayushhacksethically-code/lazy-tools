@@ -17,9 +17,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Nim Environment
-        uses: iffy/install-nim@v5
-        with:
-          nim-version: 'stable'
+        run: |
+          # Install Nim using choosenim (self-contained installer) to avoid relying on an external action
+          curl -sSf https://nim-lang.org/choosenim/init.sh | sh -s -- -y
+          echo "$HOME/.nimble/bin" >> $GITHUB_PATH
+          nim --version
 
       - name: Install Build Dependencies
         run: |
