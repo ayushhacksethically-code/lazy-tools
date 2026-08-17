@@ -15,6 +15,7 @@ Requires:       ffmpeg
 Lazy Tools is a suite of lightweight, high-performance CLI applications written in Nim:
 - play_140p: YouTube player TUI tuned for digital wellbeing
 - audioconvert: Parallel multi-core audio converter and speech transcriber
+- pdfcraft: Offline PDF manipulation, OCR, conversion & repair suite
 - lazy_vault: Encrypted password & file vault
 
 %prep
@@ -23,6 +24,7 @@ Lazy Tools is a suite of lightweight, high-performance CLI applications written 
 %build
 nim c -d:release play_140p.nim
 nim c -d:release audioconvert.nim
+nim c -d:release pdfcraft.nim
 nim c -d:release projects/lazy_vault/lazy_vault.nim
 
 %install
@@ -32,6 +34,7 @@ mkdir -p %{buildroot}%{_mandir}/man1
 
 install -m 0755 play_140p %{buildroot}%{_bindir}/play_140p
 install -m 0755 audioconvert %{buildroot}%{_bindir}/audioconvert
+install -m 0755 pdfcraft %{buildroot}%{_bindir}/pdfcraft
 install -m 0755 projects/lazy_vault/lazy_vault %{buildroot}%{_bindir}/lazy_vault
 
 if [ -f play_140p.1 ]; then
@@ -40,9 +43,10 @@ fi
 
 %files
 %license LICENSE
-%doc README.md
+%doc README.md PDFCRAFT_DOCUMENTATION.md
 %{_bindir}/play_140p
 %{_bindir}/audioconvert
+%{_bindir}/pdfcraft
 %{_bindir}/lazy_vault
 %{_mandir}/man1/play_140p.1*
 
