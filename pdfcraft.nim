@@ -1,4 +1,4 @@
-import std/[os, parseopt, strutils, osproc, tables]
+import std/[os, parseopt, strutils, osproc, tables, times]
 
 type
   PkgManager = enum
@@ -301,16 +301,53 @@ proc cmdOCR(args: seq[string]) =
       echo "✅ Searchable OCR PDF generated -> ", output
       return
     else:
-      echo "⚠️ ocrmypdf failed, falling back to tesseract..."
+      echo "⚠️ ocrmypdf failed, falling back to pdftoppm + tesseract pipeline..."
 
-  if not ensureExe("tesseract"): return
-  echo "🔍 Running OCR via Tesseract (language: ", lang, ")..."
-  let baseName = output.changeFileExt("")
-  let cmd = "tesseract " & quoteShell(input) & " " & quoteShell(baseName) & " -l " & quoteShell(lang) & " pdf"
-  if execCmd(cmd) == 0:
-    echo "✅ Searchable OCR PDF generated -> ", baseName & ".pdf"
-  else:
-    echo "❌ OCR process failed."
+  if not ensureExe("pdftoppm") or not ensureExe("tesseract"): return
+  echo "🔍 Running OCR via pdftoppm + Tesseract (language: ", lang, ")..."
+
+  let tmpDir = getTempDir() / ("pdfcraft_ocr_" & $getTime().toUnix())
+  createDir(tmpDir)
+
+  # 1. Convert PDF pages to PNG image files
+  let renderCmd = "pdftoppm -png -r 300 " & quoteShell(input) & " " & quoteShell(tmpDir / "page")
+  if execCmd(renderCmd) != 0:
+    echo "❌ Failed to render PDF pages into images for OCR."
+    removeDir(tmpDir)
+    return
+
+  # 2. Run Tesseract on each PNG image to generate PDF pages
+  var ocrPdfs: seq[string] = @[]
+  for pageImg in walkFiles(tmpDir / "*.png"):
+    let pageOutBase = pageImg.changeFileExt("") & "_ocr"
+    let tessCmd = "tesseract " & quoteShell(pageImg) & " " & quoteShell(pageOutBase) & " -l " & quoteShell(lang) & " pdf"
+    if execCmd(tessCmd) == 0:
+      ocrPdfs.add(pageOutBase & ".pdf")
+
+  if ocrPdfs.len == 0:
+    echo "❌ OCR processing failed for all pages."
+    removeDir(tmpDir)
+    return
+
+  # 3. Merge individual OCR'd PDF pages back into final output PDF
+  if ensureExe("qpdf"):
+    var mergeArgs = ""
+    for pdfPage in ocrPdfs: mergeArgs.add(" " & quoteShell(pdfPage))
+    let mergeCmd = "qpdf --empty --pages" & mergeArgs & " -- " & quoteShell(output)
+    if execCmd(mergeCmd) == 0:
+      echo "✅ Searchable OCR PDF generated -> ", output
+    else:
+      echo "❌ Failed to merge OCR'd pages into final PDF."
+  elif ensureExe("pdfunite"):
+    var mergeArgs = ""
+    for pdfPage in ocrPdfs: mergeArgs.add(" " & quoteShell(pdfPage))
+    let mergeCmd = "pdfunite" & mergeArgs & " " & quoteShell(output)
+    if execCmd(mergeCmd) == 0:
+      echo "✅ Searchable OCR PDF generated -> ", output
+    else:
+      echo "❌ Failed to merge OCR'd pages into final PDF."
+
+  removeDir(tmpDir)
 
 proc cmdToJpg(args: seq[string]) =
   var input = ""
