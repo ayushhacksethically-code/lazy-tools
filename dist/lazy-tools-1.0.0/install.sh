@@ -17,6 +17,9 @@ if command -v nim >/dev/null 2>&1; then
     echo "⚙️ Compiling Nim source files (release mode)..."
     nim c -d:release /home/narayanas/play_140p.nim
     nim c -d:release /home/narayanas/audioconvert.nim
+    if [ -f "$(dirname "$0")/pdfcraft.nim" ]; then
+        nim c -d:release "$(dirname "$0")/pdfcraft.nim"
+    fi
     if [ -f "/home/narayanas/projects/lazy_vault/lazy_vault.nim" ]; then
         nim c -d:release /home/narayanas/projects/lazy_vault/lazy_vault.nim
     fi
@@ -39,7 +42,11 @@ if [ -f "/home/narayanas/projects/lazy_vault/lazy_vault" ]; then
     ln -sf "$INSTALL_BIN_DIR/lazy_vault" "$INSTALL_BIN_DIR/v"
 fi
 
-chmod +x "$INSTALL_BIN_DIR/play_140p" "$INSTALL_BIN_DIR/audioconvert" 2>/dev/null || true
+if [ -f "$(dirname "$0")/pdfcraft" ]; then
+    cp -f "$(dirname "$0")/pdfcraft" "$INSTALL_BIN_DIR/"
+fi
+
+chmod +x "$INSTALL_BIN_DIR/play_140p" "$INSTALL_BIN_DIR/audioconvert" "$INSTALL_BIN_DIR/pdfcraft" 2>/dev/null || true
 
 # 3. Copy Man Pages safely
 echo "📖 Installing man pages to $INSTALL_MAN_DIR..."

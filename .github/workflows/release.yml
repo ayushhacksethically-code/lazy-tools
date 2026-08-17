@@ -34,6 +34,7 @@ jobs:
         run: |
           nim c -d:release play_140p.nim
           nim c -d:release audioconvert.nim
+          nim c -d:release pdfcraft.nim
           nim c -d:release projects/lazy_vault/lazy_vault.nim
 
       - name: Build Standalone Tarballs & FPM Packages (DEB & RPM)
@@ -45,10 +46,10 @@ jobs:
 
           # 1. Full Suite DEB & RPM
           mkdir -p build_suite/usr/local/bin build_suite/usr/local/share/man/man1
-          cp play_140p audioconvert projects/lazy_vault/lazy_vault build_suite/usr/local/bin/
+          cp play_140p audioconvert pdfcraft projects/lazy_vault/lazy_vault build_suite/usr/local/bin/
           cp *.1 build_suite/usr/local/share/man/man1/ || true
-          fpm -s dir -t deb -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, lazy_vault)" -C build_suite .
-          fpm -s dir -t rpm -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, lazy_vault)" -C build_suite .
+          fpm -s dir -t deb -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, pdfcraft, lazy_vault)" -C build_suite .
+          fpm -s dir -t rpm -n lazy-tools -v 1.0.0 --description "Universal Nim CLI Suite (play_140p, audioconvert, pdfcraft, lazy_vault)" -C build_suite .
 
           # 2. Standalone play_140p DEB & RPM
           mkdir -p build_play140p/usr/local/bin
@@ -61,6 +62,12 @@ jobs:
           cp audioconvert build_audioconvert/usr/local/bin/
           fpm -s dir -t deb -n audioconvert -v 1.0.0 --description "Parallel multi-core audio converter and speech transcriber" -C build_audioconvert .
           fpm -s dir -t rpm -n audioconvert -v 1.0.0 --description "Parallel multi-core audio converter and speech transcriber" -C build_audioconvert .
+
+          # 4. Standalone pdfcraft DEB & RPM
+          mkdir -p build_pdfcraft/usr/local/bin
+          cp pdfcraft build_pdfcraft/usr/local/bin/
+          fpm -s dir -t deb -n pdfcraft -v 1.0.0 --description "Offline PDF manipulation, OCR, conversion & repair suite" -C build_pdfcraft .
+          fpm -s dir -t rpm -n pdfcraft -v 1.0.0 --description "Offline PDF manipulation, OCR, conversion & repair suite" -C build_pdfcraft .
 
           # 4. Standalone lazy_vault DEB & RPM
           mkdir -p build_lazyvault/usr/local/bin

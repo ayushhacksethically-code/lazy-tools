@@ -20,7 +20,12 @@ A suite of blazing-fast, single-binary CLI applications for Linux built with **N
 - **Multi-Format Support**: Extract and convert to `mp3`, `opus`, `m4a`, `wav`, `flac`, `aac`.
 - **Built-in Speech Transcriber**: `audioconvert transcribe <file_or_url>`.
 
-### 3. 🔐 `lazy_vault` (`v`)
+### 3. 📄 `pdfcraft`
+- **All-in-One Fast Nim PDF Manipulation & Converter Suite**.
+- **Comprehensive PDF Toolbox**: Merge, Split, Organize, Compress (GS), Repair, OCR (Tesseract/ocrmypdf), Convert (PDF to JPG/PNG, JPG to PDF, HTML to PDF, PDF to PDF/A, PDF to LLM Markdown), Watermark, Rotate, Protect & Unlock (Encrypt/Decrypt), and Side-by-side Visual PDF Compare.
+- **Auto Dependency Resolution**: Automatically detects missing CLI tools (`qpdf`, `poppler-utils`, `tesseract-ocr`, `ghostscript`, `img2pdf`, `pandoc`, `diff-pdf`) and offers automatic distro-native package installation (`apt`, `dnf`, `pacman`, `zypper`).
+
+### 4. 🔐 `lazy_vault` (`v`)
 - **Fast CLI Password & File Vault** for terminal privacy and encrypted data management.
 
 ---
