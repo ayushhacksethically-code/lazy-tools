@@ -448,6 +448,11 @@
       }
     }
 
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
     function renderVaultFeed() {
       const container = document.getElementById('vault-feed-container');
       container.innerHTML = '';
