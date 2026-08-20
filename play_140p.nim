@@ -588,6 +588,7 @@ USAGE:
   play_140p <URL | QUERY> [SPEED] [MODE]
   play_140p status
   play_140p convert <input>... [options]
+  play_140p imgconvert <input>... [options]
   play_140p transcribe <file_or_url>
 
 POSITIONAL ARGUMENTS:
@@ -601,6 +602,8 @@ EXAMPLES:
   play_140p transcribe audio.mp3
   play_140p convert video.mp4 mp3 192k
   play_140p convert -r /path/to/music
+  play_140p imgconvert -i:image.png -o:output.webp
+  play_140p img -i:input.jpg -o:output.png --quality:90
 """
     quit(0)
 
@@ -647,6 +650,31 @@ EXAMPLES:
       quit(exitCode)
     else:
       echo "❌ 'audioconvert' command binary not found."
+      quit(1)
+
+  if firstArg in ["imgconvert", "img"]:
+    let subArgs = rawArgs[1..^1]
+    var targetExe = ""
+    let candidates = [
+      findExe("nim_convert"),
+      findExe("img_wrapper"),
+      "/home/narayanas/nim_img_tools/nim_convert",
+      "/home/narayanas/nim_img_tools/img_wrapper",
+      getAppDir() / "nim_convert",
+      getAppDir() / "img_wrapper"
+    ]
+    for candidate in candidates:
+      if candidate != "" and fileExists(candidate):
+        targetExe = candidate
+        break
+
+    if targetExe != "":
+      let process = startProcess(targetExe, args = subArgs, options = {poParentStreams, poUsePath})
+      let exitCode = process.waitForExit()
+      process.close()
+      quit(exitCode)
+    else:
+      echo "❌ 'nim_convert' / 'img_wrapper' command binary not found."
       quit(1)
 
   var speed = 1.5
