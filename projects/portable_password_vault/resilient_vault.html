@@ -725,6 +725,10 @@
       return res;
     }
 
+    function normalizeText(txt) {
+      return String(txt || '').trim().toLowerCase();
+    }
+
     function importVaultCsvFile(file) {
       if (!file) return;
       const reader = new FileReader();
@@ -733,11 +737,15 @@
           const content = e.target.result;
           const lines = content.split(/\r?\n/);
           let addedCount = 0;
+          let duplicateCount = 0;
 
           if (lines.length === 0) {
             alert("❌ CSV file is empty!");
             return;
           }
+
+          // Existing normalized contents set
+          const existingSet = new Set(vaultItems.map(i => normalizeText(i.content || i.fileName)));
 
           lines.forEach((line, idx) => {
             const trimmed = line.trim();
@@ -762,6 +770,14 @@
               entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]} | Note: ${cols[3]}`;
             }
 
+            const norm = normalizeText(entryText);
+
+            if (existingSet.has(norm)) {
+              duplicateCount++;
+              return;
+            }
+
+            existingSet.add(norm);
             vaultItems.unshift({
               id: 'csv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
               type: 'text',
@@ -772,11 +788,16 @@
             addedCount++;
           });
 
-          if (addedCount > 0) {
-            saveToStorage();
-            renderVaultFeed();
-            updateOutboxBanner();
-            alert(`✅ Successfully imported ${addedCount} secrets from CSV!`);
+          saveToStorage();
+          renderVaultFeed();
+          updateOutboxBanner();
+
+          if (addedCount > 0 && duplicateCount > 0) {
+            alert(`✅ Successfully imported ${addedCount} NEW secret(s)!\n\n⚠️ ${duplicateCount} duplicate(s) were skipped because they already exist in the vault.`);
+          } else if (addedCount > 0) {
+            alert(`✅ Successfully imported ${addedCount} NEW secret(s)!`);
+          } else if (duplicateCount > 0) {
+            alert(`⚠️ All ${duplicateCount} item(s) in this CSV file are ALREADY PRESENT in your vault!`);
           } else {
             alert("❌ No valid rows found in CSV file!");
           }
