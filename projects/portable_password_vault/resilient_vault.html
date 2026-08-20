@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resilient Vault & Messenger (Store-and-Forward + Bit-Chunk Engine)</title>
+  <title>Resilient Vault & Messenger (Hinglish Version)</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -251,7 +251,7 @@
   <header>
     <div class="brand">
       <i class="fa-solid fa-vault"></i>
-      <span>RESILIENT PERSONAL VAULT & NOTE MESSENGER</span>
+      <span>RESILIENT PERSONAL VAULT & MESSENGER (HINGLISH)</span>
     </div>
     <div class="net-indicator" id="net-badge">
       <i class="fa-solid fa-wifi"></i> <span id="net-status-text">ONLINE</span>
@@ -263,21 +263,21 @@
     <!-- Input Section -->
     <div class="card">
       <div class="card-title">
-        <span><i class="fa-solid fa-pen-to-square"></i> Store Note, Code, or Heavy File</span>
-        <span style="font-size: 0.75rem; text-transform: none; color: var(--text-muted);">IndexedDB Offline-First + Bit-Chunk Resilient</span>
+        <span><i class="fa-solid fa-pen-to-square"></i> Naya Note, Code, Ya Heavy File Save Karein</span>
+        <span style="font-size: 0.75rem; text-transform: none; color: var(--text-muted);">IndexedDB Offline Engine + Bit-Chunk Resilient</span>
       </div>
 
       <div class="input-box-container">
-        <textarea class="text-area" id="vault-input" placeholder="Type a note, draft, link, or code snippet to save securely offline..."></textarea>
+        <textarea class="text-area" id="vault-input" placeholder="Yahan apna secret note, password, link ya text type karein..."></textarea>
         
         <div class="action-bar">
           <input type="file" id="file-uploader" style="display:none;" onchange="attachFileToVault(this.files[0])">
           <button class="file-select-btn" onclick="document.getElementById('file-uploader').click()">
-            <i class="fa-solid fa-paperclip"></i> Attach File / Video
+            <i class="fa-solid fa-paperclip"></i> File / Video Attach Karein
           </button>
           
           <button class="save-btn" onclick="saveTextToVault()">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Save to Vault
+            <i class="fa-solid fa-cloud-arrow-up"></i> Vault Mein Save Karein
           </button>
         </div>
       </div>
@@ -285,51 +285,52 @@
 
     <!-- Outbox Status Banner -->
     <div class="sync-outbox-banner" id="outbox-banner" style="display: none;">
-      <span><i class="fa-solid fa-clock-rotate-left"></i> <strong>Offline Storage Mode:</strong> <span id="pending-outbox-count">0</span> items waiting in phone outbox for network reconnect.</span>
-      <button class="btn-sm" onclick="forceSyncCheck()">Force Sync Now</button>
+      <span><i class="fa-solid fa-clock-rotate-left"></i> <strong>Offline Mode Active:</strong> <span id="pending-outbox-count">0</span> items network reconnect hone ka wait kar rahe hain.</span>
+      <button class="btn-sm" onclick="forceSyncCheck()">Abhi Sync Karein</button>
     </div>
 
     <!-- Saved Vault Feed -->
     <div class="card">
       <div class="card-title">
-        <span><i class="fa-solid fa-box-archive"></i> Saved Notes & Files</span>
+        <span><i class="fa-solid fa-box-archive"></i> Saved Notes Aur Files</span>
         <div style="display: flex; gap: 8px;">
           <input type="file" id="bin-file-input" accept=".bin,.vault" style="display:none;" onchange="importVaultBinFile(this.files[0])">
           <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="importVaultCsvFile(this.files[0])">
-          <button class="btn-sm" onclick="document.getElementById('bin-file-input').click()"><i class="fa-solid fa-file-import"></i> Open .bin</button>
-          <button class="btn-sm" onclick="document.getElementById('csv-file-input').click()"><i class="fa-solid fa-file-csv"></i> Import CSV</button>
-          <button class="btn-sm" onclick="exportVaultCsvFile()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
-          <button class="btn-sm" onclick="clearAllVault()"><i class="fa-solid fa-trash"></i> Clear All</button>
+          <button class="btn-sm" onclick="document.getElementById('bin-file-input').click()"><i class="fa-solid fa-file-import"></i> .bin File Kholo</button>
+          <button class="btn-sm" onclick="document.getElementById('csv-file-input').click()"><i class="fa-solid fa-file-csv"></i> CSV Import</button>
+          <button class="btn-sm" onclick="exportVaultCsvFile()"><i class="fa-solid fa-file-csv"></i> CSV Export</button>
+          <button class="btn-sm" onclick="clearAllVault()"><i class="fa-solid fa-trash"></i> Sab Clear Karein</button>
         </div>
       </div>
       <div class="vault-feed" id="vault-feed-container">
-        <!-- Rendered items go here -->
+        <!-- Rendered vault list item yahan aayenge -->
       </div>
     </div>
 
   </main>
 
   <footer>
-    Resilient Vault App • Zero-Server Data Persistence Engine • Local IndexedDB & Bit-Chunking
+    Resilient Vault App • Zero-Server Local Data Persistence Engine • Hinglish Build
   </footer>
 
   <script>
-    // Local persistence state using localStorage (simulating IndexedDB)
-    let vaultItems = JSON.parse(localStorage.getItem('my_vault_data') || '[]');
-    let activeFileTransfers = {};
+    // Local storage persistence state (IndexedDB / LocalStorage)
+    let vaultItemsList = JSON.parse(localStorage.getItem('my_vault_data') || '[]');
+    let activeTransferQueue = {};
 
+    // Network connection status check karne wala function
     function checkOnlineStatus() {
-      const isOnline = navigator.onLine;
-      const badge = document.getElementById('net-badge');
-      const text = document.getElementById('net-status-text');
+      const isSystemOnline = navigator.onLine;
+      const statusBadge = document.getElementById('net-badge');
+      const statusText = document.getElementById('net-status-text');
 
-      if (isOnline) {
-        badge.className = "net-indicator";
-        text.innerText = "ONLINE";
+      if (isSystemOnline) {
+        statusBadge.className = "net-indicator";
+        statusText.innerText = "ONLINE";
         syncPendingItems();
       } else {
-        badge.className = "net-indicator offline";
-        text.innerText = "OFFLINE (STORED LOCALLY)";
+        statusBadge.className = "net-indicator offline";
+        statusText.innerText = "OFFLINE (LOCAL MODE)";
       }
       updateOutboxBanner();
     }
@@ -337,209 +338,116 @@
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
 
-    // Web Crypto SHA-256 Hash helper
-    async function computeSha256(text) {
-      const msgBuffer = new TextEncoder().encode(text.trim().toLowerCase());
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Text string ko lowercase aur trim karke normalize karne ka helper
+    function normalizeTextContent(textInput) {
+      return String(textInput || '').trim().toLowerCase();
     }
 
-    async function saveTextToVault() {
-      const input = document.getElementById('vault-input');
-      const text = input.value.trim();
-      if (!text) return;
+    // Text note ko vault mein safely add karne wala function
+    function saveTextToVault() {
+      const inputElement = document.getElementById('vault-input');
+      const textVal = inputElement.value.trim();
+      if (!textVal) return;
 
-      const newHash = await computeSha256(text);
+      const normalizedInput = normalizeTextContent(textVal);
 
-      // Check duplicate across existing items
-      for (const item of vaultItems) {
-        if (item.type === 'text' && item.hash) {
-          if (item.hash === newHash) {
-            alert(`⚠️ Duplicate Detected!\n\nThis secret/credential is already present in your vault!`);
-            return;
-          }
-        } else if (item.type === 'text' && item.content) {
-          const existingHash = await computeSha256(item.content);
-          if (existingHash === newHash) {
-            alert(`⚠️ Duplicate Detected!\n\nThis secret/credential is already present in your vault!`);
-            return;
-          }
-        }
+      // Duplicate check: agar same secret pehle se vault mein hai toh warn karein
+      const isDuplicatePresent = vaultItemsList.some(itemObj => 
+        itemObj.type === 'text' && normalizeTextContent(itemObj.content) === normalizedInput
+      );
+
+      if (isDuplicatePresent) {
+        alert("⚠️ Duplicate Alert!\n\nYeh note ya password pehle se aapke vault mein majood hai!");
+        return;
       }
 
-      const newItem = {
+      const newVaultEntry = {
         id: 'item-' + Date.now(),
         type: 'text',
-        content: text,
-        hash: newHash,
+        content: textVal,
         timestamp: new Date().toLocaleString(),
         status: navigator.onLine ? 'synced' : 'local_outbox'
       };
 
-      vaultItems.unshift(newItem);
-      saveToStorage();
+      vaultItemsList.unshift(newVaultEntry);
+      saveDataToLocalStorage();
       renderVaultFeed();
-      input.value = '';
+      inputElement.value = '';
       updateOutboxBanner();
     }
 
-    async function importVaultCsvFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        try {
-          const content = e.target.result;
-          const lines = content.split(/\r?\n/);
-          let addedCount = 0;
-          let duplicateCount = 0;
-
-          if (lines.length === 0) {
-            alert("❌ CSV file is empty!");
-            return;
-          }
-
-          // Build cache of existing SHA-256 hashes
-          const existingHashes = new Set();
-          for (const item of vaultItems) {
-            if (item.type === 'text') {
-              const h = item.hash || (await computeSha256(item.content));
-              existingHashes.add(h);
-            }
-          }
-
-          for (let idx = 0; idx < lines.length; idx++) {
-            const line = lines[idx];
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            const cols = parseCsvLine(trimmed);
-            if (cols.length === 0) continue;
-
-            // Header row detection
-            const firstColLower = cols[0].toLowerCase();
-            if (idx === 0 && (firstColLower.includes("title") || firstColLower.includes("service") || firstColLower.includes("name") || firstColLower.includes("url"))) {
-              continue;
-            }
-
-            let entryText = "";
-            if (cols.length === 1) {
-              entryText = cols[0];
-            } else if (cols.length === 2) {
-              entryText = `${cols[0]}: ${cols[1]}`;
-            } else if (cols.length === 3) {
-              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]}`;
-            } else {
-              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]} | Note: ${cols[3]}`;
-            }
-
-            const lineHash = await computeSha256(entryText);
-
-            if (existingHashes.has(lineHash)) {
-              duplicateCount++;
-              continue;
-            }
-
-            existingHashes.add(lineHash);
-            vaultItems.unshift({
-              id: 'csv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-              type: 'text',
-              content: entryText,
-              hash: lineHash,
-              timestamp: new Date().toLocaleString(),
-              status: 'synced'
-            });
-            addedCount++;
-          }
-
-          saveToStorage();
-          renderVaultFeed();
-          updateOutboxBanner();
-
-          if (addedCount > 0 && duplicateCount > 0) {
-            alert(`✅ Successfully parsed ${addedCount} new secret(s)!\n\n⚠️ ${duplicateCount} duplicate(s) were skipped because they already exist in the vault.`);
-          } else if (addedCount > 0) {
-            alert(`✅ Successfully parsed ${addedCount} new secret(s)!`);
-          } else if (duplicateCount > 0) {
-            alert(`⚠️ All ${duplicateCount} items in this CSV file are ALREADY PRESENT in your vault!`);
-          } else {
-            alert("❌ No valid rows found in CSV file!");
-          }
-        } catch (err) {
-          alert("❌ Error reading CSV file: " + err.message);
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    function attachFileToVault(file) {
-      if (!file) return;
+    // Heavy file ya video attach karne wala function
+    function attachFileToVault(selectedFile) {
+      if (!selectedFile) return;
 
       const fileId = 'file-' + Date.now();
-      const numChunks = 10; // 10 Bit-pieces
+      const totalPiecesCount = 10; // Bit-chunking 10 pieces
 
-      const newItem = {
+      const newFileEntry = {
         id: fileId,
         type: 'file',
-        fileName: file.name,
-        fileSize: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+        fileName: selectedFile.name,
+        fileSize: (selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
         timestamp: new Date().toLocaleString(),
         chunksDownloaded: 0,
-        totalChunks: numChunks,
-        chunksArray: new Array(numChunks).fill(false),
+        totalChunks: totalPiecesCount,
+        chunksArray: new Array(totalPiecesCount).fill(false),
         status: 'chunking'
       };
 
-      vaultItems.unshift(newItem);
-      saveToStorage();
+      vaultItemsList.unshift(newFileEntry);
+      saveDataToLocalStorage();
       renderVaultFeed();
 
-      // Start bit-chunking process
+      // Bit-chunk transfer simulation start karein
       simulateChunkedFileProcessing(fileId);
     }
 
+    // Bit-chunk background simulation
     function simulateChunkedFileProcessing(fileId) {
-      const item = vaultItems.find(i => i.id === fileId);
-      if (!item || item.status === 'completed') return;
+      const fileItem = vaultItemsList.find(item => item.id === fileId);
+      if (!fileItem || fileItem.status === 'completed') return;
 
-      const interval = setInterval(() => {
-        // If network drops during file chunking, pause progress at current chunk!
+      const chunkInterval = setInterval(() => {
+        // Agar internet disconnect ho jaye toh current chunk par pause karein
         if (!navigator.onLine) {
-          item.status = 'paused';
-          saveToStorage();
+          fileItem.status = 'paused';
+          saveDataToLocalStorage();
           renderVaultFeed();
-          clearInterval(interval);
+          clearInterval(chunkInterval);
           return;
         }
 
-        if (item.chunksDownloaded < item.totalChunks) {
-          item.chunksArray[item.chunksDownloaded] = true;
-          item.chunksDownloaded++;
-          item.status = 'chunking';
-          saveToStorage();
+        if (fileItem.chunksDownloaded < fileItem.totalChunks) {
+          fileItem.chunksArray[fileItem.chunksDownloaded] = true;
+          fileItem.chunksDownloaded++;
+          fileItem.status = 'chunking';
+          saveDataToLocalStorage();
           renderVaultFeed();
         }
 
-        if (item.chunksDownloaded >= item.totalChunks) {
-          item.status = 'synced';
-          saveToStorage();
+        if (fileItem.chunksDownloaded >= fileItem.totalChunks) {
+          fileItem.status = 'synced';
+          saveDataToLocalStorage();
           renderVaultFeed();
-          clearInterval(interval);
+          clearInterval(chunkInterval);
         }
       }, 600);
     }
 
+    // Offline pending items ko sync karne ka function
     function syncPendingItems() {
-      let changed = false;
-      vaultItems.forEach(item => {
+      let isDataChanged = false;
+      vaultItemsList.forEach(item => {
         if (item.status === 'local_outbox') {
           item.status = 'synced';
-          changed = true;
+          isDataChanged = true;
         } else if (item.status === 'paused' && navigator.onLine) {
           simulateChunkedFileProcessing(item.id);
         }
       });
-      if (changed) {
-        saveToStorage();
+      if (isDataChanged) {
+        saveDataToLocalStorage();
         renderVaultFeed();
       }
     }
@@ -549,266 +457,273 @@
       updateOutboxBanner();
     }
 
+    // Outbox notification bar update function
     function updateOutboxBanner() {
-      const pendingCount = vaultItems.filter(i => i.status === 'local_outbox' || i.status === 'paused').length;
-      const banner = document.getElementById('outbox-banner');
-      const countSpan = document.getElementById('pending-outbox-count');
+      const pendingItemsCount = vaultItemsList.filter(item => item.status === 'local_outbox' || item.status === 'paused').length;
+      const bannerElement = document.getElementById('outbox-banner');
+      const countElement = document.getElementById('pending-outbox-count');
 
-      if (pendingCount > 0) {
-        banner.style.display = 'flex';
-        countSpan.innerText = pendingCount;
+      if (pendingItemsCount > 0) {
+        bannerElement.style.display = 'flex';
+        countElement.innerText = pendingItemsCount;
       } else {
-        banner.style.display = 'none';
+        bannerElement.style.display = 'none';
       }
     }
 
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    // HTML escape utility
+    function escapeHtmlString(inputStr) {
+      if (!inputStr) return "";
+      return String(inputStr).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
+    // Vault list ko UI mein render karne wala main function
     function renderVaultFeed() {
-      const container = document.getElementById('vault-feed-container');
-      container.innerHTML = '';
+      const feedContainer = document.getElementById('vault-feed-container');
+      feedContainer.innerHTML = '';
 
-      if (vaultItems.length === 0) {
-        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">No notes or files saved in vault yet.</div>`;
+      if (vaultItemsList.length === 0) {
+        feedContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">Abhi tak vault mein koi note ya file save nahi hai.</div>`;
         return;
       }
 
-      vaultItems.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'vault-item';
+      vaultItemsList.forEach(itemObj => {
+        const itemCardDiv = document.createElement('div');
+        itemCardDiv.className = 'vault-item';
 
-        const isSynced = item.status === 'synced';
-        const badgeClass = isSynced ? 'badge-synced' : 'badge-local';
-        const badgeText = isSynced ? 'SYNCED TO VAULT' : (item.status === 'paused' ? 'INTERRUPTED (PROGRESS SAVED)' : 'OFFLINE OUTBOX');
+        const isItemSynced = itemObj.status === 'synced';
+        const statusBadgeClass = isItemSynced ? 'badge-synced' : 'badge-local';
+        const statusBadgeText = isItemSynced ? 'VAULT MEIN SECURE' : (itemObj.status === 'paused' ? 'PAUSED (PROGRESS SAVED)' : 'OFFLINE OUTBOX');
 
-        if (item.type === 'text') {
-          div.innerHTML = `
+        if (itemObj.type === 'text') {
+          itemCardDiv.innerHTML = `
             <div class="item-header">
-              <span><i class="fa-solid fa-clock"></i> ${item.timestamp}</span>
-              <span class="badge-status ${badgeClass}">${badgeText}</span>
+              <span><i class="fa-solid fa-clock"></i> ${itemObj.timestamp}</span>
+              <span class="badge-status ${statusBadgeClass}">${statusBadgeText}</span>
             </div>
-            <div class="item-body">${escapeHtml(item.content)}</div>
+            <div class="item-body">${escapeHtmlString(itemObj.content)}</div>
             <div class="item-actions">
-              <button class="btn-sm" onclick="copyText('${escapeHtml(item.content)}')"><i class="fa-solid fa-copy"></i> Copy</button>
-              <button class="btn-sm" onclick="deleteItem('${item.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+              <button class="btn-sm" onclick="copyTextToClipboard('${escapeHtmlString(itemObj.content)}')"><i class="fa-solid fa-copy"></i> Copy</button>
+              <button class="btn-sm" onclick="deleteVaultItem('${itemObj.id}')"><i class="fa-solid fa-trash"></i> Hatao</button>
             </div>
           `;
-        } else if (item.type === 'file') {
-          const pct = Math.round((item.chunksDownloaded / item.totalChunks) * 100);
-          div.innerHTML = `
+        } else if (itemObj.type === 'file') {
+          const progressPercentage = Math.round((itemObj.chunksDownloaded / itemObj.totalChunks) * 100);
+          itemCardDiv.innerHTML = `
             <div class="item-header">
-              <span><i class="fa-solid fa-paperclip"></i> ${item.timestamp}</span>
-              <span class="badge-status ${badgeClass}">${badgeText}</span>
+              <span><i class="fa-solid fa-paperclip"></i> ${itemObj.timestamp}</span>
+              <span class="badge-status ${statusBadgeClass}">${statusBadgeText}</span>
             </div>
             <div class="file-chunk-box">
-              <div style="font-weight:600; font-size:0.9rem;"><i class="fa-solid fa-file-zipper" style="color:var(--accent-purple);"></i> ${item.fileName} (${item.fileSize})</div>
-              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+              <div style="font-weight:600; font-size:0.9rem;"><i class="fa-solid fa-file-zipper" style="color:var(--accent-purple);"></i> ${itemObj.fileName} (${itemObj.fileSize})</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${progressPercentage}%;"></div></div>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">
-                ${item.status === 'synced' ? '✅ Completed (100% Bit-Pieces Verified)' : `Chunk Piece ${item.chunksDownloaded}/${item.totalChunks} (${pct}%)`}
+                ${itemObj.status === 'synced' ? '✅ Completed (100% Bit-Pieces Verified)' : `Chunk Piece ${itemObj.chunksDownloaded}/${itemObj.totalChunks} (${progressPercentage}%)`}
               </div>
               <div class="pieces-bar">
-                ${item.chunksArray.map(c => `<div class="piece-cell ${c ? 'done' : ''}"></div>`).join('')}
+                ${itemObj.chunksArray.map(chunkDone => `<div class="piece-cell ${chunkDone ? 'done' : ''}"></div>`).join('')}
               </div>
             </div>
             <div class="item-actions">
-              <button class="btn-sm" onclick="deleteItem('${item.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+              <button class="btn-sm" onclick="deleteVaultItem('${itemObj.id}')"><i class="fa-solid fa-trash"></i> Hatao</button>
             </div>
           `;
         }
 
-        container.appendChild(div);
+        feedContainer.appendChild(itemCardDiv);
       });
     }
 
-    function copyText(txt) {
-      navigator.clipboard.writeText(txt).then(() => alert('Copied to clipboard!'));
+    // Text copy karne ka function
+    function copyTextToClipboard(textVal) {
+      navigator.clipboard.writeText(textVal).then(() => alert('📋 Clipboard mein copy ho gaya!'));
     }
 
-    function deleteItem(id) {
-      vaultItems = vaultItems.filter(i => i.id !== id);
-      saveToStorage();
+    // Single item delete karne ka function
+    function deleteVaultItem(targetId) {
+      vaultItemsList = vaultItemsList.filter(item => item.id !== targetId);
+      saveDataToLocalStorage();
       renderVaultFeed();
       updateOutboxBanner();
     }
 
+    // Pura vault clear karne ka function
     function clearAllVault() {
-      if (confirm('Clear all saved vault items?')) {
-        vaultItems = [];
-        saveToStorage();
+      if (confirm('Kya aap sach mein saare saved vault items delete karna chahte hain?')) {
+        vaultItemsList = [];
+        saveDataToLocalStorage();
         renderVaultFeed();
         updateOutboxBanner();
       }
     }
 
-    function saveToStorage() {
-      localStorage.setItem('my_vault_data', JSON.stringify(vaultItems));
+    // Data ko LocalStorage mein persist karne ka function
+    function saveDataToLocalStorage() {
+      localStorage.setItem('my_vault_data', JSON.stringify(vaultItemsList));
     }
 
-    function importVaultBinFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
+    // Binary (.bin) file load karne ka function
+    function importVaultBinFile(selectedFile) {
+      if (!selectedFile) return;
+      const fileReader = new FileReader();
+      fileReader.onload = function(event) {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            vaultItems = imported;
-            saveToStorage();
+          const importedItems = JSON.parse(event.target.result);
+          if (Array.isArray(importedItems)) {
+            vaultItemsList = importedItems;
+            saveDataToLocalStorage();
             renderVaultFeed();
             updateOutboxBanner();
-            alert(`✅ Successfully loaded ${imported.length} items from .bin file!`);
+            alert(`✅ ${importedItems.length} items successfully .bin file se restore ho gaye!`);
           } else {
-            alert("❌ Invalid .bin file format!");
+            alert("❌ File format invalid hai!");
           }
         } catch (err) {
-          alert("❌ Failed to parse .bin file!");
+          alert("❌ .bin file read karne mein problem aayi!");
         }
       };
-      reader.readAsText(file);
+      fileReader.readAsText(selectedFile);
     }
 
+    // CSV format export function
     function exportVaultCsvFile() {
-      if (vaultItems.length === 0) {
-        alert("Vault is empty! Add items first.");
+      if (vaultItemsList.length === 0) {
+        alert("Vault khali hai! Pehle kuch add karein.");
         return;
       }
-      let csvContent = "title,type,content_or_filename,timestamp\n";
-      vaultItems.forEach(item => {
-        const title = item.id;
-        const type = item.type;
-        const content = item.type === 'file' ? item.fileName : item.content;
-        const ts = item.timestamp;
+      let csvContentStr = "title,type,content_or_filename,timestamp\n";
+      vaultItemsList.forEach(itemObj => {
+        const titleStr = itemObj.id;
+        const typeStr = itemObj.type;
+        const contentStr = itemObj.type === 'file' ? itemObj.fileName : itemObj.content;
+        const timestampStr = itemObj.timestamp;
         
-        function escapeCsvField(str) {
-          if (!str) return '""';
-          const s = String(str).replace(/"/g, '""');
-          return `"${s}"`;
+        function escapeCsvField(val) {
+          if (!val) return '""';
+          const cleanStr = String(val).replace(/"/g, '""');
+          return `"${cleanStr}"`;
         }
 
-        csvContent += `${escapeCsvField(title)},${escapeCsvField(type)},${escapeCsvField(content)},${escapeCsvField(ts)}\n`;
+        csvContentStr += `${escapeCsvField(titleStr)},${escapeCsvField(typeStr)},${escapeCsvField(contentStr)},${escapeCsvField(timestampStr)}\n`;
       });
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `vault_export_${Date.now()}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const blobData = new Blob([csvContentStr], { type: 'text/csv;charset=utf-8;' });
+      const downloadUrl = URL.createObjectURL(blobData);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = downloadUrl;
+      downloadAnchor.download = `vault_export_${Date.now()}.csv`;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(downloadUrl);
     }
 
-    function parseCsvLine(line) {
-      const res = [];
-      let cur = '';
-      let inQuotes = false;
-      for (let i = 0; i < line.length; i++) {
-        const c = line[i];
-        if (c === '"') {
-          if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-            cur += '"';
+    // CSV line parser function
+    function parseCsvLine(lineStr) {
+      const parsedColumns = [];
+      let currentVal = '';
+      let isInsideQuotes = false;
+      for (let i = 0; i < lineStr.length; i++) {
+        const char = lineStr[i];
+        if (char === '"') {
+          if (isInsideQuotes && i + 1 < lineStr.length && lineStr[i + 1] === '"') {
+            currentVal += '"';
             i++;
           } else {
-            inQuotes = !inQuotes;
+            isInsideQuotes = !isInsideQuotes;
           }
-        } else if (c === ',' && !inQuotes) {
-          res.push(cur.trim());
-          cur = '';
+        } else if (char === ',' && !isInsideQuotes) {
+          parsedColumns.push(currentVal.trim());
+          currentVal = '';
         } else {
-          cur += c;
+          currentVal += char;
         }
       }
-      res.push(cur.trim());
-      return res;
+      parsedColumns.push(currentVal.trim());
+      return parsedColumns;
     }
 
-    function normalizeText(txt) {
-      return String(txt || '').trim().toLowerCase();
-    }
-
-    function importVaultCsvFile(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
+    // CSV file import karne wala function (with instant duplicate detection)
+    function importVaultCsvFile(selectedCsvFile) {
+      if (!selectedCsvFile) return;
+      const fileReader = new FileReader();
+      fileReader.onload = function(event) {
         try {
-          const content = e.target.result;
-          const lines = content.split(/\r?\n/);
-          let addedCount = 0;
-          let duplicateCount = 0;
+          const rawContent = event.target.result;
+          const contentLines = rawContent.split(/\r?\n/);
+          let newAddedCount = 0;
+          let skippedDuplicateCount = 0;
 
-          if (lines.length === 0) {
-            alert("❌ CSV file is empty!");
+          if (contentLines.length === 0) {
+            alert("❌ CSV file khali hai!");
             return;
           }
 
-          // Existing normalized contents set
-          const existingSet = new Set(vaultItems.map(i => normalizeText(i.content || i.fileName)));
+          // Existing normalized records Set banayein duplicate match ke liye
+          const existingRecordsSet = new Set(vaultItemsList.map(item => normalizeTextContent(item.content || item.fileName)));
 
-          lines.forEach((line, idx) => {
-            const trimmed = line.trim();
-            if (!trimmed) return;
-            const cols = parseCsvLine(trimmed);
-            if (cols.length === 0) return;
+          contentLines.forEach((lineStr, lineIndex) => {
+            const trimmedLine = lineStr.trim();
+            if (!trimmedLine) return;
+            const columns = parseCsvLine(trimmedLine);
+            if (columns.length === 0) return;
 
-            // Header row detection
-            const firstColLower = cols[0].toLowerCase();
-            if (idx === 0 && (firstColLower.includes("title") || firstColLower.includes("service") || firstColLower.includes("name") || firstColLower.includes("url"))) {
+            // Header row check
+            const firstColLower = columns[0].toLowerCase();
+            if (lineIndex === 0 && (firstColLower.includes("title") || firstColLower.includes("service") || firstColLower.includes("name") || firstColLower.includes("url"))) {
               return;
             }
 
-            let entryText = "";
-            if (cols.length === 1) {
-              entryText = cols[0];
-            } else if (cols.length === 2) {
-              entryText = `${cols[0]}: ${cols[1]}`;
-            } else if (cols.length === 3) {
-              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]}`;
+            let parsedEntryText = "";
+            if (columns.length === 1) {
+              parsedEntryText = columns[0];
+            } else if (columns.length === 2) {
+              parsedEntryText = `${columns[0]}: ${columns[1]}`;
+            } else if (columns.length === 3) {
+              parsedEntryText = `${columns[0]} | User: ${columns[1]} | Secret: ${columns[2]}`;
             } else {
-              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]} | Note: ${cols[3]}`;
+              parsedEntryText = `${columns[0]} | User: ${columns[1]} | Secret: ${columns[2]} | Note: ${columns[3]}`;
             }
 
-            const norm = normalizeText(entryText);
+            const normalizedEntry = normalizeTextContent(parsedEntryText);
 
-            if (existingSet.has(norm)) {
-              duplicateCount++;
+            if (existingRecordsSet.has(normalizedEntry)) {
+              skippedDuplicateCount++;
               return;
             }
 
-            existingSet.add(norm);
-            vaultItems.unshift({
+            existingRecordsSet.add(normalizedEntry);
+            vaultItemsList.unshift({
               id: 'csv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
               type: 'text',
-              content: entryText,
+              content: parsedEntryText,
               timestamp: new Date().toLocaleString(),
               status: 'synced'
             });
-            addedCount++;
+            newAddedCount++;
           });
 
-          saveToStorage();
+          saveDataToLocalStorage();
           renderVaultFeed();
           updateOutboxBanner();
 
-          if (addedCount > 0 && duplicateCount > 0) {
-            alert(`✅ Successfully imported ${addedCount} NEW secret(s)!\n\n⚠️ ${duplicateCount} duplicate(s) were skipped because they already exist in the vault.`);
-          } else if (addedCount > 0) {
-            alert(`✅ Successfully imported ${addedCount} NEW secret(s)!`);
-          } else if (duplicateCount > 0) {
-            alert(`⚠️ All ${duplicateCount} item(s) in this CSV file are ALREADY PRESENT in your vault!`);
+          if (newAddedCount > 0 && skippedDuplicateCount > 0) {
+            alert(`✅ ${newAddedCount} NAYE secrets successfully import ho gaye!\n\n⚠️ ${skippedDuplicateCount} duplicates skip kar diye gaye kyunki wo pehle se vault mein hain.`);
+          } else if (newAddedCount > 0) {
+            alert(`✅ ${newAddedCount} NAYE secrets successfully import ho gaye!`);
+          } else if (skippedDuplicateCount > 0) {
+            alert(`⚠️ All ${skippedDuplicateCount} items in this CSV file are ALREADY PRESENT in your vault! (Zero duplicates added)`);
           } else {
-            alert("❌ No valid rows found in CSV file!");
+            alert("❌ CSV file mein koi valid data nahi mila!");
           }
         } catch (err) {
-          alert("❌ Error reading CSV file: " + err.message);
+          alert("❌ CSV file read karne mein error: " + err.message);
         }
       };
-      reader.readAsText(file);
+      fileReader.readAsText(selectedCsvFile);
     }
 
-    // Init on load
+    // Page load handler
     window.addEventListener('DOMContentLoaded', () => {
       checkOnlineStatus();
       renderVaultFeed();
