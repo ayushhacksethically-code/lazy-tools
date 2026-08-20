@@ -13,6 +13,7 @@ A suite of blazing-fast, single-binary CLI applications for Linux built with **N
 - **Data Saver Mode (144p @ 1.5x speed)** with automated 60-minute daily watch cutoff & 4-hour cooldown lock.
 - **Interactive TUI Search** with ANSI thumbnail graphic previews powered by `fzf` & `chafa`.
 - **Speech-to-Text Integration**: Transcribe any video or voice recording to Hindi/English text (`play_140p transcribe <url/file>`).
+- **Image Conversion & Processing**: Quick sub-wrapper integration for image conversions (`play_140p imgconvert` or `play_140p img`).
 
 ### 2. 🎵 `audioconvert`
 - **Multi-Core Parallel Audio Converter & YouTube Downloader**.
@@ -65,7 +66,11 @@ play_140p "lofi hip hop" 1.5x audio
 play_140p transcribe "/path/to/voice_recording.mp3"
 play_140p transcribe "https://youtu.be/..."
 
-# 3. Batch Convert Unlimited Files in Parallel
+# 3. Image Conversion & Processing via play_140p
+play_140p imgconvert -i:image.png -o:output.webp
+play_140p img -i:input.jpg -o:output.png --quality:90
+
+# 4. Batch Convert Unlimited Files in Parallel
 audioconvert f1.mp4 f2.mkv f3.webm -f:mp3 -o:~/Music
 
 # 4. View Built-in Man Pages
