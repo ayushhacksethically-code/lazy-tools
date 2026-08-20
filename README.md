@@ -41,17 +41,57 @@ Auto-detects and installs missing dependencies on:
 
 ---
 
-## ⚡ Quick One-Line Installation
+## 📥 Installation Guide per Distribution
 
+### ⚡ Option 1: Universal One-Line Automatic Install (All Distros)
+Auto-detects package manager (`apt`, `dnf`, `pacman`, `zypper`), resolves dependencies, and installs binaries to `~/.local/bin/`:
 ```bash
-chmod +x install.sh && ./install.sh
+curl -fsSL https://raw.githubusercontent.com/ayushhacksethically-code/lazy-tools/main/install.sh | bash
 ```
 
-Or compile manually:
+---
+
+### 📦 Option 2: Distro-Specific Native Packages (GitHub Releases)
+
+#### 🟠 Ubuntu / Debian / Mint / Pop!_OS (`.deb`)
+Download the `.deb` package from [Releases](https://github.com/ayushhacksethically-code/lazy-tools/releases) and install:
 ```bash
+sudo apt update
+sudo apt install ./lazy-tools_1.0.0_amd64.deb
+```
+
+#### 🔵 Fedora / RHEL / CentOS (`.rpm`)
+Download the `.rpm` package from [Releases](https://github.com/ayushhacksethically-code/lazy-tools/releases) and install:
+```bash
+sudo dnf install ./lazy-tools-1.0.0-1.x86_64.rpm
+```
+
+#### 🟢 Arch Linux / Manjaro (`makepkg`)
+Clone the repository and build via `PKGBUILD`:
+```bash
+git clone https://github.com/ayushhacksethically-code/lazy-tools.git
+cd lazy-tools/aur/play_140p
+makepkg -si
+```
+
+#### 🦎 openSUSE / Tumbleweed (`.rpm` / `.tar.gz`)
+Download `.tar.gz` standalone binary or install `.rpm` package:
+```bash
+sudo zypper install ./lazy-tools-1.0.0-1.x86_64.rpm
+```
+
+---
+
+### 🛠️ Option 3: Manual Build from Source (Nim Compiler)
+```bash
+git clone https://github.com/ayushhacksethically-code/lazy-tools.git
+cd lazy-tools
 nim c -d:release play_140p.nim
 nim c -d:release audioconvert.nim
-cp play_140p audioconvert ~/.local/bin/
+nim c -d:release pdfcraft.nim
+nim c -d:release projects/lazy_vault/lazy_vault.nim
+mkdir -p ~/.local/bin
+cp play_140p audioconvert pdfcraft projects/lazy_vault/lazy_vault ~/.local/bin/
 ```
 
 ---
