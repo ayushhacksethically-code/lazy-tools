@@ -531,26 +531,6 @@
 
     function saveToStorage() {
       localStorage.setItem('my_vault_data', JSON.stringify(vaultItems));
-      if (vaultItems.length > 0) {
-        autoSaveBinFile();
-      }
-    }
-
-    let autoSaveTimeout = null;
-    function autoSaveBinFile() {
-      clearTimeout(autoSaveTimeout);
-      autoSaveTimeout = setTimeout(() => {
-        const dataStr = JSON.stringify(vaultItems, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `vault_data.bin`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 500);
     }
 
     function importVaultBinFile(file) {
