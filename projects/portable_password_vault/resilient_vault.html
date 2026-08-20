@@ -337,15 +337,42 @@
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
 
-    function saveTextToVault() {
+    // Web Crypto SHA-256 Hash helper
+    async function computeSha256(text) {
+      const msgBuffer = new TextEncoder().encode(text.trim().toLowerCase());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function saveTextToVault() {
       const input = document.getElementById('vault-input');
       const text = input.value.trim();
       if (!text) return;
+
+      const newHash = await computeSha256(text);
+
+      // Check duplicate across existing items
+      for (const item of vaultItems) {
+        if (item.type === 'text' && item.hash) {
+          if (item.hash === newHash) {
+            alert(`⚠️ Duplicate Detected!\n\nThis secret/credential is already present in your vault!`);
+            return;
+          }
+        } else if (item.type === 'text' && item.content) {
+          const existingHash = await computeSha256(item.content);
+          if (existingHash === newHash) {
+            alert(`⚠️ Duplicate Detected!\n\nThis secret/credential is already present in your vault!`);
+            return;
+          }
+        }
+      }
 
       const newItem = {
         id: 'item-' + Date.now(),
         type: 'text',
         content: text,
+        hash: newHash,
         timestamp: new Date().toLocaleString(),
         status: navigator.onLine ? 'synced' : 'local_outbox'
       };
@@ -355,6 +382,93 @@
       renderVaultFeed();
       input.value = '';
       updateOutboxBanner();
+    }
+
+    async function importVaultCsvFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const content = e.target.result;
+          const lines = content.split(/\r?\n/);
+          let addedCount = 0;
+          let duplicateCount = 0;
+
+          if (lines.length === 0) {
+            alert("❌ CSV file is empty!");
+            return;
+          }
+
+          // Build cache of existing SHA-256 hashes
+          const existingHashes = new Set();
+          for (const item of vaultItems) {
+            if (item.type === 'text') {
+              const h = item.hash || (await computeSha256(item.content));
+              existingHashes.add(h);
+            }
+          }
+
+          for (let idx = 0; idx < lines.length; idx++) {
+            const line = lines[idx];
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            const cols = parseCsvLine(trimmed);
+            if (cols.length === 0) continue;
+
+            // Header row detection
+            const firstColLower = cols[0].toLowerCase();
+            if (idx === 0 && (firstColLower.includes("title") || firstColLower.includes("service") || firstColLower.includes("name") || firstColLower.includes("url"))) {
+              continue;
+            }
+
+            let entryText = "";
+            if (cols.length === 1) {
+              entryText = cols[0];
+            } else if (cols.length === 2) {
+              entryText = `${cols[0]}: ${cols[1]}`;
+            } else if (cols.length === 3) {
+              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]}`;
+            } else {
+              entryText = `${cols[0]} | User: ${cols[1]} | Secret: ${cols[2]} | Note: ${cols[3]}`;
+            }
+
+            const lineHash = await computeSha256(entryText);
+
+            if (existingHashes.has(lineHash)) {
+              duplicateCount++;
+              continue;
+            }
+
+            existingHashes.add(lineHash);
+            vaultItems.unshift({
+              id: 'csv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+              type: 'text',
+              content: entryText,
+              hash: lineHash,
+              timestamp: new Date().toLocaleString(),
+              status: 'synced'
+            });
+            addedCount++;
+          }
+
+          saveToStorage();
+          renderVaultFeed();
+          updateOutboxBanner();
+
+          if (addedCount > 0 && duplicateCount > 0) {
+            alert(`✅ Successfully parsed ${addedCount} new secret(s)!\n\n⚠️ ${duplicateCount} duplicate(s) were skipped because they already exist in the vault.`);
+          } else if (addedCount > 0) {
+            alert(`✅ Successfully parsed ${addedCount} new secret(s)!`);
+          } else if (duplicateCount > 0) {
+            alert(`⚠️ All ${duplicateCount} items in this CSV file are ALREADY PRESENT in your vault!`);
+          } else {
+            alert("❌ No valid rows found in CSV file!");
+          }
+        } catch (err) {
+          alert("❌ Error reading CSV file: " + err.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
     function attachFileToVault(file) {
