@@ -295,7 +295,10 @@
         <span><i class="fa-solid fa-box-archive"></i> Saved Notes & Files</span>
         <div style="display: flex; gap: 8px;">
           <input type="file" id="bin-file-input" accept=".bin,.vault" style="display:none;" onchange="importVaultBinFile(this.files[0])">
-          <button class="btn-sm" onclick="document.getElementById('bin-file-input').click()"><i class="fa-solid fa-file-import"></i> Open .bin File</button>
+          <input type="file" id="csv-file-input" accept=".csv" style="display:none;" onchange="importVaultCsvFile(this.files[0])">
+          <button class="btn-sm" onclick="document.getElementById('bin-file-input').click()"><i class="fa-solid fa-file-import"></i> Open .bin</button>
+          <button class="btn-sm" onclick="document.getElementById('csv-file-input').click()"><i class="fa-solid fa-file-csv"></i> Import CSV</button>
+          <button class="btn-sm" onclick="exportVaultCsvFile()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
           <button class="btn-sm" onclick="clearAllVault()"><i class="fa-solid fa-trash"></i> Clear All</button>
         </div>
       </div>
@@ -562,6 +565,98 @@
           }
         } catch (err) {
           alert("❌ Failed to parse .bin file!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportVaultCsvFile() {
+      if (vaultItems.length === 0) {
+        alert("Vault is empty! Add items first.");
+        return;
+      }
+      let csvContent = "title,type,content_or_filename,timestamp\n";
+      vaultItems.forEach(item => {
+        const title = item.id;
+        const type = item.type;
+        const content = item.type === 'file' ? item.fileName : item.content;
+        const ts = item.timestamp;
+        
+        function escapeCsvField(str) {
+          if (!str) return '""';
+          const s = String(str).replace(/"/g, '""');
+          return `"${s}"`;
+        }
+
+        csvContent += `${escapeCsvField(title)},${escapeCsvField(type)},${escapeCsvField(content)},${escapeCsvField(ts)}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vault_export_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function parseCsvLine(line) {
+      const res = [];
+      let cur = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === ',' && !inQuotes) {
+          res.push(cur.trim());
+          cur = '';
+        } else {
+          cur += c;
+        }
+      }
+      res.push(cur.trim());
+      return res;
+    }
+
+    function importVaultCsvFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const lines = e.target.result.split(/\r?\n/);
+          let addedCount = 0;
+          lines.forEach((line, idx) => {
+            if (!line.trim()) return;
+            const cols = parseCsvLine(line.trim());
+            if (idx === 0 && cols[0].toLowerCase().includes("title") || cols[0].toLowerCase().includes("service")) {
+              return; // Skip header row
+            }
+            if (cols.length >= 2) {
+              const textContent = cols.length >= 3 ? `${cols[0]}: ${cols[2]} (User: ${cols[1]})` : `${cols[0]}: ${cols[1]}`;
+              vaultItems.unshift({
+                id: 'csv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                type: 'text',
+                content: textContent,
+                timestamp: new Date().toLocaleString(),
+                status: 'synced'
+              });
+              addedCount++;
+            }
+          });
+          saveToStorage();
+          renderVaultFeed();
+          updateOutboxBanner();
+          alert(`✅ Successfully imported ${addedCount} secrets from CSV file!`);
+        } catch (err) {
+          alert("❌ Failed to parse CSV file!");
         }
       };
       reader.readAsText(file);
