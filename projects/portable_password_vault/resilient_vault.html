@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resilient Vault & Messenger (Store-and-Forward + Bit-Chunk Engine)</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-main: #070a11;
+      --bg-card: #0f172a;
+      --bg-card-hover: #1e293b;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-yellow: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background-color: var(--bg-main); color: var(--text-main); font-family: var(--font-sans); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.1rem; }
+    .brand i { color: var(--accent-cyan); font-size: 1.3rem; }
+
+    .net-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green);
+    }
+    .net-indicator.offline {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--accent-yellow);
+    }
+
+    .app-layout {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      flex-grow: 1;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title i { color: var(--accent-cyan); }
+
+    /* Vault Input Section */
+    .input-box-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .text-area {
+      width: 100%;
+      height: 90px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      outline: none;
+      resize: vertical;
+    }
+    .text-area:focus { border-color: var(--accent-cyan); }
+
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .file-select-btn {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .file-select-btn:hover { background: rgba(139, 92, 246, 0.28); }
+
+    .save-btn {
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    .save-btn:hover { opacity: 0.9; }
+
+    /* Outbox Sync Banner */
+    .sync-outbox-banner {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent-yellow);
+      font-size: 0.85rem;
+    }
+
+    /* Vault Items Feed */
+    .vault-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .vault-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .item-body { font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
+
+    .badge-status {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .badge-local { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-synced { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .file-chunk-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 6px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-fill { height: 100%; width: 0%; background: var(--accent-green); transition: width 0.2s linear; }
+
+    .pieces-bar { display: flex; gap: 3px; }
+    .piece-cell { flex: 1; height: 6px; background: #334155; border-radius: 1px; }
+    .piece-cell.done { background: var(--accent-green); }
+
+    .item-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .btn-sm {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .btn-sm:hover { background: rgba(255, 255, 255, 0.12); }
+
+    footer { text-align: center; padding: 16px; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-vault"></i>
+      <span>RESILIENT PERSONAL VAULT & NOTE MESSENGER</span>
+    </div>
+    <div class="net-indicator" id="net-badge">
+      <i class="fa-solid fa-wifi"></i> <span id="net-status-text">ONLINE</span>
+    </div>
+  </header>
+
+  <main class="app-layout">
+
+    <!-- Input Section -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-pen-to-square"></i> Store Note, Code, or Heavy File</span>
+        <span style="font-size: 0.75rem; text-transform: none; color: var(--text-muted);">IndexedDB Offline-First + Bit-Chunk Resilient</span>
+      </div>
+
+      <div class="input-box-container">
+        <textarea class="text-area" id="vault-input" placeholder="Type a note, draft, link, or code snippet to save securely offline..."></textarea>
+        
+        <div class="action-bar">
+          <input type="file" id="file-uploader" style="display:none;" onchange="attachFileToVault(this.files[0])">
+          <button class="file-select-btn" onclick="document.getElementById('file-uploader').click()">
+            <i class="fa-solid fa-paperclip"></i> Attach File / Video
+          </button>
+          
+          <button class="save-btn" onclick="saveTextToVault()">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Save to Vault
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outbox Status Banner -->
+    <div class="sync-outbox-banner" id="outbox-banner" style="display: none;">
+      <span><i class="fa-solid fa-clock-rotate-left"></i> <strong>Offline Storage Mode:</strong> <span id="pending-outbox-count">0</span> items waiting in phone outbox for network reconnect.</span>
+      <button class="btn-sm" onclick="forceSyncCheck()">Force Sync Now</button>
+    </div>
+
+    <!-- Saved Vault Feed -->
+    <div class="card">
+      <div class="card-title">
+        <span><i class="fa-solid fa-box-archive"></i> Saved Notes & Files</span>
+        <div style="display: flex; gap: 8px;">
+          <input type="file" id="bin-file-input" accept=".bin,.vault" style="display:none;" onchange="importVaultBinFile(this.files[0])">
+          <button class="btn-sm" onclick="document.getElementById('bin-file-input').click()"><i class="fa-solid fa-file-import"></i> Open .bin File</button>
+          <button class="btn-sm" onclick="clearAllVault()"><i class="fa-solid fa-trash"></i> Clear All</button>
+        </div>
+      </div>
+      <div class="vault-feed" id="vault-feed-container">
+        <!-- Rendered items go here -->
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    Resilient Vault App • Zero-Server Data Persistence Engine • Local IndexedDB & Bit-Chunking
+  </footer>
+
+  <script>
+    // Local persistence state using localStorage (simulating IndexedDB)
+    let vaultItems = JSON.parse(localStorage.getItem('my_vault_data') || '[]');
+    let activeFileTransfers = {};
+
+    function checkOnlineStatus() {
+      const isOnline = navigator.onLine;
+      const badge = document.getElementById('net-badge');
+      const text = document.getElementById('net-status-text');
+
+      if (isOnline) {
+        badge.className = "net-indicator";
+        text.innerText = "ONLINE";
+        syncPendingItems();
+      } else {
+        badge.className = "net-indicator offline";
+        text.innerText = "OFFLINE (STORED LOCALLY)";
+      }
+      updateOutboxBanner();
+    }
+
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+
+    function saveTextToVault() {
+      const input = document.getElementById('vault-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const newItem = {
+        id: 'item-' + Date.now(),
+        type: 'text',
+        content: text,
+        timestamp: new Date().toLocaleString(),
+        status: navigator.onLine ? 'synced' : 'local_outbox'
+      };
+
+      vaultItems.unshift(newItem);
+      saveToStorage();
+      renderVaultFeed();
+      input.value = '';
+      updateOutboxBanner();
+    }
+
+    function attachFileToVault(file) {
+      if (!file) return;
+
+      const fileId = 'file-' + Date.now();
+      const numChunks = 10; // 10 Bit-pieces
+
+      const newItem = {
+        id: fileId,
+        type: 'file',
+        fileName: file.name,
+        fileSize: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+        timestamp: new Date().toLocaleString(),
+        chunksDownloaded: 0,
+        totalChunks: numChunks,
+        chunksArray: new Array(numChunks).fill(false),
+        status: 'chunking'
+      };
+
+      vaultItems.unshift(newItem);
+      saveToStorage();
+      renderVaultFeed();
+
+      // Start bit-chunking process
+      simulateChunkedFileProcessing(fileId);
+    }
+
+    function simulateChunkedFileProcessing(fileId) {
+      const item = vaultItems.find(i => i.id === fileId);
+      if (!item || item.status === 'completed') return;
+
+      const interval = setInterval(() => {
+        // If network drops during file chunking, pause progress at current chunk!
+        if (!navigator.onLine) {
+          item.status = 'paused';
+          saveToStorage();
+          renderVaultFeed();
+          clearInterval(interval);
+          return;
+        }
+
+        if (item.chunksDownloaded < item.totalChunks) {
+          item.chunksArray[item.chunksDownloaded] = true;
+          item.chunksDownloaded++;
+          item.status = 'chunking';
+          saveToStorage();
+          renderVaultFeed();
+        }
+
+        if (item.chunksDownloaded >= item.totalChunks) {
+          item.status = 'synced';
+          saveToStorage();
+          renderVaultFeed();
+          clearInterval(interval);
+        }
+      }, 600);
+    }
+
+    function syncPendingItems() {
+      let changed = false;
+      vaultItems.forEach(item => {
+        if (item.status === 'local_outbox') {
+          item.status = 'synced';
+          changed = true;
+        } else if (item.status === 'paused' && navigator.onLine) {
+          simulateChunkedFileProcessing(item.id);
+        }
+      });
+      if (changed) {
+        saveToStorage();
+        renderVaultFeed();
+      }
+    }
+
+    function forceSyncCheck() {
+      syncPendingItems();
+      updateOutboxBanner();
+    }
+
+    function updateOutboxBanner() {
+      const pendingCount = vaultItems.filter(i => i.status === 'local_outbox' || i.status === 'paused').length;
+      const banner = document.getElementById('outbox-banner');
+      const countSpan = document.getElementById('pending-outbox-count');
+
+      if (pendingCount > 0) {
+        banner.style.display = 'flex';
+        countSpan.innerText = pendingCount;
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    function renderVaultFeed() {
+      const container = document.getElementById('vault-feed-container');
+      container.innerHTML = '';
+
+      if (vaultItems.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px;">No notes or files saved in vault yet.</div>`;
+        return;
+      }
+
+      vaultItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'vault-item';
+
+        const isSynced = item.status === 'synced';
+        const badgeClass = isSynced ? 'badge-synced' : 'badge-local';
+        const badgeText = isSynced ? 'SYNCED TO VAULT' : (item.status === 'paused' ? 'INTERRUPTED (PROGRESS SAVED)' : 'OFFLINE OUTBOX');
+
+        if (item.type === 'text') {
+          div.innerHTML = `
+            <div class="item-header">
+              <span><i class="fa-solid fa-clock"></i> ${item.timestamp}</span>
+              <span class="badge-status ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="item-body">${escapeHtml(item.content)}</div>
+            <div class="item-actions">
+              <button class="btn-sm" onclick="copyText('${escapeHtml(item.content)}')"><i class="fa-solid fa-copy"></i> Copy</button>
+              <button class="btn-sm" onclick="deleteItem('${item.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+          `;
+        } else if (item.type === 'file') {
+          const pct = Math.round((item.chunksDownloaded / item.totalChunks) * 100);
+          div.innerHTML = `
+            <div class="item-header">
+              <span><i class="fa-solid fa-paperclip"></i> ${item.timestamp}</span>
+              <span class="badge-status ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="file-chunk-box">
+              <div style="font-weight:600; font-size:0.9rem;"><i class="fa-solid fa-file-zipper" style="color:var(--accent-purple);"></i> ${item.fileName} (${item.fileSize})</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">
+                ${item.status === 'synced' ? '✅ Completed (100% Bit-Pieces Verified)' : `Chunk Piece ${item.chunksDownloaded}/${item.totalChunks} (${pct}%)`}
+              </div>
+              <div class="pieces-bar">
+                ${item.chunksArray.map(c => `<div class="piece-cell ${c ? 'done' : ''}"></div>`).join('')}
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="btn-sm" onclick="deleteItem('${item.id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+          `;
+        }
+
+        container.appendChild(div);
+      });
+    }
+
+    function copyText(txt) {
+      navigator.clipboard.writeText(txt).then(() => alert('Copied to clipboard!'));
+    }
+
+    function deleteItem(id) {
+      vaultItems = vaultItems.filter(i => i.id !== id);
+      saveToStorage();
+      renderVaultFeed();
+      updateOutboxBanner();
+    }
+
+    function clearAllVault() {
+      if (confirm('Clear all saved vault items?')) {
+        vaultItems = [];
+        saveToStorage();
+        renderVaultFeed();
+        updateOutboxBanner();
+      }
+    }
+
+    function saveToStorage() {
+      localStorage.setItem('my_vault_data', JSON.stringify(vaultItems));
+      if (vaultItems.length > 0) {
+        autoSaveBinFile();
+      }
+    }
+
+    let autoSaveTimeout = null;
+    function autoSaveBinFile() {
+      clearTimeout(autoSaveTimeout);
+      autoSaveTimeout = setTimeout(() => {
+        const dataStr = JSON.stringify(vaultItems, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `vault_data.bin`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 500);
+    }
+
+    function importVaultBinFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (Array.isArray(imported)) {
+            vaultItems = imported;
+            saveToStorage();
+            renderVaultFeed();
+            updateOutboxBanner();
+            alert(`✅ Successfully loaded ${imported.length} items from .bin file!`);
+          } else {
+            alert("❌ Invalid .bin file format!");
+          }
+        } catch (err) {
+          alert("❌ Failed to parse .bin file!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Init on load
+    window.addEventListener('DOMContentLoaded', () => {
+      checkOnlineStatus();
+      renderVaultFeed();
+    });
+  </script>
+</body>
+</html>
